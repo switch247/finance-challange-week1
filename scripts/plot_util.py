@@ -2,175 +2,173 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+
+# --- FIX: Robust Style Setting with Fallback ---
+# This block attempts to set a nice style, but falls back to 'default' if
+# style sheet files cannot be found due to environment/import path issues.
+try:
+    plt.style.use('seaborn-v0_8')
+except Exception:
+    plt.style.use('default')
+    print("Warning: Could not load 'seaborn-v0_8' style. Falling back to 'default'.")
+
 
 class PlotHelper:
     """
     A helper class for creating various types of plots using matplotlib and seaborn.
-    Follows PEP8 conventions.
+    Follows PEP8 conventions and ensures figure management.
     """
 
-    def __init__(self, figsize=(10, 6), style="seaborn-v0_8"):
-        """
-        Initialize the PlotHelper.
-
-        Args:
-            figsize (tuple): Default figure size for plots.
-            style (str): Matplotlib style to use.
-        """ 
-        plt.style.use(style)
+    def __init__(self, figsize=(10, 6)):
         self.figsize = figsize
+
+    def _setup_figure(self, title=None):
+        """Internal method to create a figure and set the title."""
+        plt.figure(figsize=self.figsize)
+        if title:
+            plt.title(title, fontsize=16)
 
     def histogram(self, data, column=None, bins=30, **kwargs):
         """
-        Create a histogram.
+        Create a histogram (Distribution of data).
 
         Args:
             data (pd.DataFrame or array-like): Data to plot.
             column (str, optional): Column name if data is DataFrame.
             bins (int): Number of bins.
-            **kwargs: Additional arguments for plt.hist or sns.histplot.
+            **kwargs: Additional arguments for sns.histplot.
         """
-        plt.figure(figsize=self.figsize)
-        if isinstance(data, pd.DataFrame) and column:
-            sns.histplot(data[column], bins=bins, **kwargs)
-        else:
-            plt.hist(data, bins=bins, **kwargs)
+        title = kwargs.pop('title', 'Data Distribution')
+        self._setup_figure(title=title)
+
+        plot_data = data[column] if isinstance(
+            data, pd.DataFrame) and column else data
+
+        sns.histplot(plot_data, bins=bins, kde=True, **kwargs)
+        plt.xlabel(column or 'Value', fontsize=12)
+        plt.ylabel('Frequency', fontsize=12)
+        plt.grid(axis='y', alpha=0.5)
         plt.show()
 
-    def scatter(self, x, y, data=None, **kwargs):
+    def scatter(self, data, x, y, **kwargs):
         """
-        Create a scatter plot.
+        Create a scatter plot (Relationship between two variables).
 
         Args:
-            x (str or array-like): X data or column name.
-            y (str or array-like): Y data or column name.
-            data (pd.DataFrame, optional): DataFrame if x and y are column names.
-            **kwargs: Additional arguments for plt.scatter or sns.scatterplot.
+            data (pd.DataFrame): DataFrame with x and y columns.
+            x (str): Column name for x.
+            y (str): Column name for y.
+            **kwargs: Additional arguments for sns.scatterplot.
         """
-        plt.figure(figsize=self.figsize)
-        if data is not None:
-            sns.scatterplot(x=x, y=y, data=data, **kwargs)
-        else:
-            plt.scatter(x, y, **kwargs)
+        title = kwargs.pop('title', f'Scatter Plot: {x} vs {y}')
+        self._setup_figure(title=title)
+        sns.scatterplot(x=x, y=y, data=data, **kwargs)
+        plt.xlabel(x, fontsize=12)
+        plt.ylabel(y, fontsize=12)
+        plt.grid(True, linestyle='--', alpha=0.6)
         plt.show()
 
-    def line(self, x, y, data=None, **kwargs):
+    def line(self, data, x, y, **kwargs):
         """
-        Create a line plot.
+        Create a line plot (Trend over Time/Sequence). Crucial for time series.
 
         Args:
-            x (str or array-like): X data or column name.
-            y (str or array-like): Y data or column name.
-            data (pd.DataFrame, optional): DataFrame if x and y are column names.
-            **kwargs: Additional arguments for plt.plot or sns.lineplot.
+            data (pd.DataFrame): DataFrame with x and y columns.
+            x (str): Column name for x.
+            y (str or int): Column name for y.
+            **kwargs: Additional arguments for sns.lineplot.
         """
-        plt.figure(figsize=self.figsize)
-        if data is not None:
+        title = kwargs.pop('title', f'Line Plot: {y} over {x}')
+        self._setup_figure(title=title)
+
+        # Check if x is the index (common in time series plots from resample().reset_index())
+        if data.index.name == x or x == data.index.name:
+            plot_data = data.reset_index()
+            sns.lineplot(x=x, y=y, data=plot_data, **kwargs)
+        else:
             sns.lineplot(x=x, y=y, data=data, **kwargs)
-        else:
-            plt.plot(x, y, **kwargs)
+
+        plt.xlabel(x.capitalize(), fontsize=12)
+        plt.ylabel(y, fontsize=12)
+        plt.grid(True, linestyle='--', alpha=0.6)
         plt.show()
 
-    def bar(self, x, height, data=None, **kwargs):
+    def line_plot(self, data, x, y, **kwargs):
+        """Alias for line method to match common usage."""
+        return self.line(data, x, y, **kwargs)
+
+    def bar(self, data, x, y, **kwargs):
         """
-        Create a bar plot.
+        Create a bar plot (Comparison of categorical groups).
 
         Args:
-            x (str or array-like): X data or column name.
-            height (str or array-like): Height data or column name.
-            data (pd.DataFrame, optional): DataFrame if x and height are column names.
-            **kwargs: Additional arguments for plt.bar or sns.barplot.
+            data (pd.DataFrame): DataFrame with x (category) and y (value) columns.
+            x (str): Column name for x (categories).
+            y (str or int): Column name for y (values).
+            **kwargs: Additional arguments for sns.barplot.
         """
-        plt.figure(figsize=self.figsize)
-        if data is not None:
-            sns.barplot(x=x, y=height, data=data, **kwargs)
-        else:
-            plt.bar(x, height, **kwargs)
-        plt.show()
+        title = kwargs.pop('title', f'Bar Plot: {y} by {x}')
+        self._setup_figure(title=title)
 
-    def boxplot(self, data, x=None, y=None, **kwargs):
-        """
-        Create a box plot.
+        # Use sns.barplot
+        sns.barplot(x=x, y=y, data=data, **kwargs)
 
-        Args:
-            data (pd.DataFrame or array-like): Data to plot.
-            x (str, optional): X column name.
-            y (str, optional): Y column name.
-            **kwargs: Additional arguments for sns.boxplot.
-        """
-        plt.figure(figsize=self.figsize)
-        if isinstance(data, pd.DataFrame):
-            sns.boxplot(data=data, x=x, y=y, **kwargs)
-        else:
-            sns.boxplot(data=data, **kwargs)
+        plt.xlabel(x, fontsize=12)
+        plt.ylabel(y, fontsize=12)
+        # Improve readability for categories
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
         plt.show()
 
     def heatmap(self, data, **kwargs):
         """
-        Create a heatmap.
-
-        Args:
-            data (pd.DataFrame or array-like): Data to plot.
-            **kwargs: Additional arguments for sns.heatmap.
+        Create a heatmap (Correlation or matrix visualization).
         """
-        plt.figure(figsize=self.figsize)
-        sns.heatmap(data, **kwargs)
+        title = kwargs.pop('title', 'Heatmap Visualization')
+        self._setup_figure(figsize=kwargs.pop('figsize', (10, 8)), title=title)
+
+        plot_data = data.select_dtypes(include=np.number).corr(
+        ) if isinstance(data, pd.DataFrame) else data
+
+        sns.heatmap(
+            plot_data,
+            annot=kwargs.pop('annot', True),
+            fmt=kwargs.pop('fmt', ".2f"),
+            cmap=kwargs.pop('cmap', 'coolwarm'),
+            linewidths=kwargs.pop('linewidths', 0.5),
+            **kwargs
+        )
+        plt.xticks(rotation=45, ha='right')
+        plt.yticks(rotation=0)
+        plt.tight_layout()
         plt.show()
 
     def plot_correlation_matrix(self, data, **kwargs):
         """
         Create a correlation matrix heatmap.
-
-        Args:
-            data (pd.DataFrame): DataFrame for which to plot the correlation matrix.
-            **kwargs: Additional arguments for sns.heatmap.
         """
-        corr = data.corr()
-        plt.figure(figsize=self.figsize)
-        sns.heatmap(corr, annot=True, fmt=".2f", cmap='coolwarm', **kwargs)
-        plt.show()
+        kwargs['title'] = kwargs.pop('title', 'Correlation Matrix Heatmap')
+        return self.heatmap(data, **kwargs)
 
     def plot_predictions(self, y_true, y_pred, **kwargs):
         """
         Plot true vs predicted values.
-
-        Args:
-            y_true (array-like): True values.
-            y_pred (array-like): Predicted values.
-            **kwargs: Additional arguments for plt.scatter.
         """
-        plt.figure(figsize=self.figsize)
-        plt.scatter(y_true, y_pred, **kwargs)
-        plt.plot([min(y_true), max(y_true)], [min(y_true),
-                 max(y_true)], color='red', linestyle='--')
-        plt.xlabel('True Values')
-        plt.ylabel('Predicted Values')
-        plt.title('True vs Predicted Values')
+        title = kwargs.pop('title', 'True vs Predicted Values')
+        self._setup_figure(title=title)
+
+        plt.scatter(y_true, y_pred, alpha=0.7,
+                    edgecolors='w', linewidths=0.5, **kwargs)
+
+        # Plot the ideal line (y=x)
+        min_val = min(min(y_true), min(y_pred))
+        max_val = max(max(y_true), max(y_pred))
+        plt.plot([min_val, max_val], [min_val, max_val], color='red',
+                 linestyle='--', label='Ideal Prediction')
+
+        plt.xlabel('True Values', fontsize=12)
+        plt.ylabel('Predicted Values', fontsize=12)
+        plt.legend()
+        plt.grid(True, linestyle='--', alpha=0.6)
         plt.show()
-
-    def grid_view(self, plots, nrows, ncols, figsize=None):
-        """
-        Create a grid of subplots.
-
-        Args:
-            plots (list): List of plot functions or data to plot.
-            nrows (int): Number of rows in the grid.
-            ncols (int): Number of columns in the grid.
-            figsize (tuple, optional): Figure size for the grid.
-        """
-        if figsize is None:
-            figsize = (ncols * 5, nrows * 4)
-        fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
-        axes = axes.flatten() if nrows * ncols > 1 else [axes]
-
-        for i, plot_func in enumerate(plots):
-            if i < len(axes):
-                plt.sca(axes[i])
-                plot_func()
-        plt.tight_layout()
-        plt.show()
-
-
-
-x = PlotHelper()
-print(x)
