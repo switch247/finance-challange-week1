@@ -17,3 +17,4 @@ htmlcov/
 /data
 /*.csv
 /.ipynb_checkpoints/
+walkthrough.md*
