@@ -1,6 +1,6 @@
 import pandas as pd
 
-from app.utils import generate_sample_df
+from src.fnsa.utils.generate_sample import generate_sample_df
 
 
 def test_generate_sample_df_basic():
