@@ -172,3 +172,73 @@ class PlotHelper:
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.show()
+
+    def plot_confusion_matrix(self, cm, labels=None, **kwargs):
+        """
+        Plot confusion matrix heatmap.
+        
+        Args:
+            cm (array-like): Confusion matrix.
+            labels (list): Class labels.
+        """
+        title = kwargs.pop('title', 'Confusion Matrix')
+        self._setup_figure(title=title)
+        
+        if labels is None:
+            labels = ['Class 0', 'Class 1']
+            
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                   xticklabels=labels, yticklabels=labels, **kwargs)
+        
+        plt.xlabel('Predicted Label', fontsize=12)
+        plt.ylabel('True Label', fontsize=12)
+        plt.tight_layout()
+        plt.show()
+
+    def plot_roc_curve(self, fpr, tpr, auc_score=None, **kwargs):
+        """
+        Plot ROC curve.
+        
+        Args:
+            fpr (array-like): False Positive Rates.
+            tpr (array-like): True Positive Rates.
+            auc_score (float): Area Under Curve score.
+        """
+        title = kwargs.pop('title', 'ROC Curve')
+        self._setup_figure(title=title)
+        
+        label = f'ROC Curve (AUC = {auc_score:.2f})' if auc_score is not None else 'ROC Curve'
+        
+        plt.plot(fpr, tpr, color='darkorange', lw=2, label=label)
+        plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+        
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate', fontsize=12)
+        plt.ylabel('True Positive Rate', fontsize=12)
+        plt.legend(loc="lower right")
+        plt.grid(True, alpha=0.3)
+        plt.show()
+
+    def plot_feature_importance(self, features, importances, top_n=20, **kwargs):
+        """
+        Plot feature importance bar chart.
+        
+        Args:
+            features (list): List of feature names.
+            importances (list): List of importance values.
+            top_n (int): Number of top features to show.
+        """
+        title = kwargs.pop('title', f'Top {top_n} Feature Importances')
+        self._setup_figure(title=title)
+        
+        # Create DataFrame for sorting
+        df = pd.DataFrame({'feature': features, 'importance': importances})
+        df = df.sort_values('importance', ascending=False).head(top_n)
+        
+        sns.barplot(x='importance', y='feature', data=df, palette='viridis')
+        
+        plt.xlabel('Importance', fontsize=12)
+        plt.ylabel('Feature', fontsize=12)
+        plt.tight_layout()
+        plt.show()
