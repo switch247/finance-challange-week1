@@ -56,6 +56,11 @@ def handle_missing_values(df: pd.DataFrame, strategy: str = 'drop',
         df = df.fillna(method='ffill')
     elif strategy == 'bfill':
         df = df.fillna(method='bfill')
+    elif strategy == 'fill_mean':
+        if columns:
+            df[columns] = df[columns].fillna(df[columns].mean())
+        else:
+            df = df.fillna(df.mean())
     
     return df
 
