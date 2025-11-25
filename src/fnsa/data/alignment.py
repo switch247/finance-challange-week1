@@ -70,7 +70,11 @@ def merge_news_stock_data(news_df: pd.DataFrame, stock_df: pd.DataFrame,
     )
     
     # Fill missing sentiment with neutral (0)
-    sentiment_cols = ['avg_sentiment', 'compound', 'pos', 'neg', 'neu']
+    sentiment_cols = [
+        'avg_sentiment', 'sentiment_std', 
+        'pos_mean', 'neg_mean', 'neu_mean',
+        'compound', 'pos', 'neg', 'neu'
+    ]
     for col in sentiment_cols:
         if col in merged.columns:
             merged[col].fillna(0, inplace=True)
