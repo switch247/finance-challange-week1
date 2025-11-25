@@ -1,0 +1,11 @@
+{
+    "metrics": {
+        "accuracy": 0.519205298013245,
+        "precision": 0.519205298013245,
+        "recall": 1.0,
+        "f1_score": 0.6835222319093287,
+        "roc_auc": 0.5
+    },
+    "saved_at": "20251125_211630",
+    "model_file": "sentiment_rf_v1_20251125_211630.joblib"
+}

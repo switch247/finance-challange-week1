@@ -2,6 +2,13 @@
 
 Analyze the relationship between financial news sentiment and stock price movements.
 
+## Business Objective
+
+The primary objective of this project is to quantify the correlation between financial news sentiment and stock market performance. By leveraging natural language processing (NLP) and quantitative finance techniques, we aim to:
+- **Sentiment Analysis**: Extract sentiment scores from financial news headlines.
+- **Correlation Analysis**: Determine if news sentiment acts as a leading indicator for stock price movements.
+- **Investment Insights**: Provide data-driven insights that can inform trading strategies and risk management.
+
 ---
 
 ## Project Overview
@@ -10,6 +17,7 @@ This repository contains code to:
 - Load and inspect news data.
 - Perform Exploratory Data Analysis (EDA) including text analysis and topic modeling.
 - Train and evaluate sentiment analysis models.
+- **Correlate sentiment with stock market metrics.**
 
 ## Folder Structure
 
@@ -76,7 +84,11 @@ python scripts/train.py --evaluate
 
 ## Technologies
 - **Python 3.8+**
-- **Pandas, NumPy**: Data manipulation.
+- **Pandas, NumPy**: Data manipulation and numerical analysis.
 - **Scikit-learn**: Machine learning (Logistic Regression, NMF, TF-IDF).
 - **TextBlob**: Sentiment analysis.
-- **Matplotlib, Seaborn**: Visualization.
+- **Matplotlib, Seaborn**: Data visualization.
+- **TA-Lib**: Technical analysis of financial market data.
+- **Yfinance**: Market data downloader.
+- **PyNance**: Financial metrics and portfolio optimization.
+- **QuantStats**: Portfolio analytics and risk metrics.
